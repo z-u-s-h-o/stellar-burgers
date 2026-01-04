@@ -13,10 +13,20 @@ export const IngredientsCategory = forwardRef<
   const burgerConstructor = useSelector(selectConstructorItems);
 
   const ingredientsCounters = useMemo(() => {
-    const { bun, ingredientsCount } = burgerConstructor;
-    const counters: { [key: string]: number } = { ...ingredientsCount };
+    const counters: { [key: string]: number } = {};
 
-    if (bun) counters[bun._id] = 2;
+    // Булка (всегда 2 штуки)
+    if (burgerConstructor.bun) {
+      counters[burgerConstructor.bun._id] = 2;
+    }
+
+    // Подсчёт ингредиентов из массива
+    burgerConstructor.ingredients.forEach((ingredient) => {
+      if (ingredient._id) {
+        counters[ingredient._id] = (counters[ingredient._id] || 0) + 1;
+      }
+    });
+
     return counters;
   }, [burgerConstructor]);
 

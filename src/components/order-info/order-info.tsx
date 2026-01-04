@@ -2,18 +2,21 @@ import { FC, useMemo, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useParams } from 'react-router-dom';
 
+import { useAppDispatch } from '../../services/hooks';
 import { selectIngredients } from '../../services/slices/ingredientsSlice';
 import {
   selectFeedOrders,
   selectUserOrders
 } from '../../services/slices/ordersSlice';
-import { getOrderByNumberApi } from '../../utils/burger-api';
+import { getOrderByNumber } from '../../services/thunk/orders';
 
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient, TOrder } from '@utils-types';
+import { isFulfilled } from '@reduxjs/toolkit';
 
 export const OrderInfo: FC = () => {
+  const dispatch = useAppDispatch();
   const { number } = useParams<{ number: string }>();
   const location = useLocation();
 
@@ -32,15 +35,16 @@ export const OrderInfo: FC = () => {
   const localOrderData = orders.find(
     (order) => order.number === Number(number)
   );
-
   // Эффект для загрузки данных через API при отсутствии локального заказа
   useEffect(() => {
     if (!localOrderData && number) {
       setLoading(true);
-      getOrderByNumberApi(Number(number))
-        .then((response) => {
-          if (response.success && response.orders) {
-            setApiOrderData(response.orders[0]);
+      dispatch(getOrderByNumber(Number(number)))
+        .then((data) => {
+          if (isFulfilled(data)) {
+            setApiOrderData(data.payload.orders[0]);
+          } else {
+            setApiOrderData(null);
           }
         })
         .catch(() => {

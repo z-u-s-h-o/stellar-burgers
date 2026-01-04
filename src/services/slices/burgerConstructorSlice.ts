@@ -6,7 +6,6 @@ type ConstructorState = {
   constructorItems: {
     bun: TConstructorIngredient | null;
     ingredients: TConstructorIngredient[];
-    ingredientsCount: { [id: string]: number };
   };
   orderRequest: boolean;
   orderModalData: TOrder | null;
@@ -15,8 +14,7 @@ type ConstructorState = {
 const initialState: ConstructorState = {
   constructorItems: {
     bun: null,
-    ingredients: [],
-    ingredientsCount: {}
+    ingredients: []
   },
   orderRequest: false,
   orderModalData: null
@@ -27,16 +25,7 @@ export const burgerConstructorSlice = createSlice({
   initialState,
   reducers: {
     addIngredient: (state, action) => {
-      const ingredientId = action.payload._id;
-
-      // Если ингредиент уже есть — увеличиваем счётчик
-      if (state.constructorItems.ingredientsCount[ingredientId]) {
-        state.constructorItems.ingredientsCount[ingredientId]++;
-      } else {
-        // Иначе добавляем в массив и инициализируем счётчик
-        state.constructorItems.ingredients.push(action.payload);
-        state.constructorItems.ingredientsCount[ingredientId] = 1;
-      }
+      state.constructorItems.ingredients.push(action.payload);
     },
     setBun: (state, action) => {
       state.constructorItems.bun = action.payload;
@@ -63,14 +52,14 @@ export const burgerConstructorSlice = createSlice({
     },
     removeIngredient: (state, action) => {
       const index = action.payload;
-      const ingredientId = state.constructorItems.ingredients[index]._id;
 
-      if (state.constructorItems.ingredientsCount[ingredientId] > 1) {
-        state.constructorItems.ingredientsCount[ingredientId]--;
-      } else {
-        state.constructorItems.ingredients.splice(index, 1);
-        delete state.constructorItems.ingredientsCount[ingredientId];
+      // Проверяем, что индекс в допустимых пределах
+      if (index < 0 || index >= state.constructorItems.ingredients.length) {
+        return;
       }
+
+      // Удаляем элемент по указанному индексу
+      state.constructorItems.ingredients.splice(index, 1);
     },
     removeAllIngredients: (state) => {
       state.constructorItems.ingredients = [];
@@ -88,8 +77,7 @@ export const burgerConstructorSlice = createSlice({
       .addCase(sendOrder.fulfilled, (state, action) => {
         state.constructorItems = {
           bun: null,
-          ingredients: [],
-          ingredientsCount: {}
+          ingredients: []
         };
         state.orderRequest = false;
         state.orderModalData = action.payload.order;
@@ -101,9 +89,7 @@ export const burgerConstructorSlice = createSlice({
   selectors: {
     selectConstructorItems: (state: ConstructorState) => state.constructorItems,
     selectOrderRequest: (state: ConstructorState) => state.orderRequest,
-    selectOrderModalData: (state: ConstructorState) => state.orderModalData,
-    selectIngredientsCount: (state: ConstructorState) =>
-      state.constructorItems.ingredientsCount
+    selectOrderModalData: (state: ConstructorState) => state.orderModalData
   }
 });
 
@@ -120,6 +106,5 @@ export const {
 export const {
   selectConstructorItems,
   selectOrderRequest,
-  selectOrderModalData,
-  selectIngredientsCount
+  selectOrderModalData
 } = burgerConstructorSlice.selectors;

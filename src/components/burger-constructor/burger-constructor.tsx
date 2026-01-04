@@ -25,28 +25,22 @@ export const BurgerConstructor: FC = () => {
 
   const onOrderClick = () => {
     if (!user) {
-      // Если пользователь не авторизован — перенаправляем на страницу входа
       navigate('/login');
       return;
     }
 
-    if (
-      constructorItems.bun &&
-      Object.keys(constructorItems.ingredientsCount).length > 0
-    ) {
+    // Проверяем, что есть булка и хотя бы один ингредиент
+    if (constructorItems.bun && constructorItems.ingredients.length > 0) {
       const bunId = constructorItems.bun._id;
 
-      // Явно указываем тип: string[]
-      const ingredientsIds = Object.entries(
-        constructorItems.ingredientsCount
-      ).reduce<string[]>((acc, [ingredientId, count]) => {
-        for (let i = 0; i < count; i++) {
-          acc.push(ingredientId); // теперь TypeScript знает, что ingredientId — строка
-        }
-        return acc;
-      }, []); // пустой массив теперь имеет тип string[]
+      // Собираем массив ID всех ингредиентов (каждый элемент массива — отдельный ID)
+      const ingredientsIds = constructorItems.ingredients.map(
+        (ingredient) => ingredient._id
+      );
 
+      // Формируем итоговый заказ: [булка, ингредиенты..., булка]
       const order = [bunId, ...ingredientsIds, bunId];
+
       dispatch(sendOrder(order));
     }
   };
@@ -58,13 +52,12 @@ export const BurgerConstructor: FC = () => {
   };
 
   const price = useMemo(() => {
+    // Цена булки (всегда 2 штуки)
     const bunPrice = constructorItems.bun ? constructorItems.bun.price * 2 : 0;
 
+    // Подсчёт цены всех ингредиентов
     const ingredientsPrice = constructorItems.ingredients.reduce(
-      (sum, ingredient) => {
-        const count = constructorItems.ingredientsCount[ingredient._id] || 1;
-        return sum + ingredient.price * count;
-      },
+      (sum, ingredient) => sum + ingredient.price,
       0
     );
 
