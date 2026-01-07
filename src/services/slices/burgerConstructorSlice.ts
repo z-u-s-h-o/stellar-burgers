@@ -1,5 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { TConstructorIngredient, TOrder } from '@utils-types';
+import { createSlice, nanoid, PayloadAction } from '@reduxjs/toolkit';
+import { TConstructorIngredient, TIngredient, TOrder } from '@utils-types';
 import { sendOrder } from '../thunk/burgerConstructor';
 
 type ConstructorState = {
@@ -24,11 +24,29 @@ export const burgerConstructorSlice = createSlice({
   name: 'burgerConstructor',
   initialState,
   reducers: {
-    addIngredient: (state, action) => {
-      state.constructorItems.ingredients.push(action.payload);
+    addIngredient: {
+      reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
+        state.constructorItems.ingredients.push(action.payload);
+      },
+      prepare: (ingredient: TIngredient) => {
+        const payload: TConstructorIngredient = {
+          ...ingredient,
+          id: nanoid()
+        };
+        return { payload };
+      }
     },
-    setBun: (state, action) => {
-      state.constructorItems.bun = action.payload;
+    setBun: {
+      reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
+        state.constructorItems.bun = action.payload;
+      },
+      prepare: (bun: TIngredient) => {
+        const payload: TConstructorIngredient = {
+          ...bun,
+          id: nanoid()
+        };
+        return { payload };
+      }
     },
     moveIngredientUp: (state, action) => {
       const index = action.payload;

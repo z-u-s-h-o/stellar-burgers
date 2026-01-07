@@ -2,18 +2,17 @@ import { FC, SyntheticEvent, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { updateUser } from '../../services/thunk/user';
-import { selectUserData } from '../../services/slices/userSlice';
+import {
+  selectUserData,
+  selectUserError
+} from '../../services/slices/userSlice';
 import { useAppDispatch } from '../../services/hooks';
 
-import { Preloader } from '@ui';
 import { ProfileUI } from '@ui-pages';
 
 export const Profile: FC = () => {
   const user = useSelector(selectUserData);
   const dispatch = useAppDispatch();
-
-  const [loading, setLoading] = useState(false);
-  const [errorText, setErrorText] = useState('');
 
   const [formValue, setFormValue] = useState({
     name: user ? user.name : '',
@@ -36,19 +35,11 @@ export const Profile: FC = () => {
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
-    setLoading(true);
-    dispatch(updateUser(formValue))
-      .unwrap()
-      .catch((error) => {
-        setErrorText(error.message);
-      })
-      .finally(() => {
-        setLoading(false);
-        setFormValue((prevState) => ({
-          ...prevState,
-          password: ''
-        }));
-      });
+    dispatch(updateUser(formValue));
+    setFormValue((prevState) => ({
+      ...prevState,
+      password: ''
+    }));
   };
 
   const handleCancel = (e: SyntheticEvent) => {
@@ -67,20 +58,16 @@ export const Profile: FC = () => {
     }));
   };
 
+  const error = useSelector(selectUserError).update || undefined;
+
   return (
-    <>
-      {loading ? (
-        <Preloader />
-      ) : (
-        <ProfileUI
-          formValue={formValue}
-          isFormChanged={isFormChanged}
-          updateUserError={errorText}
-          handleCancel={handleCancel}
-          handleSubmit={handleSubmit}
-          handleInputChange={handleInputChange}
-        />
-      )}
-    </>
+    <ProfileUI
+      formValue={formValue}
+      isFormChanged={isFormChanged}
+      updateUserError={error}
+      handleCancel={handleCancel}
+      handleSubmit={handleSubmit}
+      handleInputChange={handleInputChange}
+    />
   );
 };

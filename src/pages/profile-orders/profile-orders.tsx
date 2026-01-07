@@ -1,8 +1,11 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import { useAppDispatch } from '../../services/hooks';
-import { selectUserOrders } from '../../services/slices/ordersSlice';
+import {
+  selectOrdersLoading,
+  selectUserOrders
+} from '../../services/slices/ordersSlice';
 import { getUserOrders } from '../../services/thunk/orders';
 
 import { Preloader } from '@ui';
@@ -12,18 +15,12 @@ import { TOrder } from '@utils-types';
 export const ProfileOrders: FC = () => {
   const dispatch = useAppDispatch();
 
-  const [loading, setLoading] = useState(false);
-
   useEffect(() => {
-    setLoading(true);
-    dispatch(getUserOrders())
-      .unwrap()
-      .finally(() => {
-        setLoading(false);
-      });
+    dispatch(getUserOrders());
   }, []);
 
   const orders: TOrder[] = useSelector(selectUserOrders);
+  const loading = useSelector(selectOrdersLoading).userOrders;
 
   return <>{loading ? <Preloader /> : <ProfileOrdersUI orders={orders} />}</>;
 };

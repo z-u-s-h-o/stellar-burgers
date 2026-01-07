@@ -1,4 +1,4 @@
-import { FC, useMemo, useState, useEffect } from 'react';
+import { FC, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useParams } from 'react-router-dom';
 
@@ -6,6 +6,9 @@ import { useAppDispatch } from '../../services/hooks';
 import { selectIngredients } from '../../services/slices/ingredientsSlice';
 import {
   selectFeedOrders,
+  selectOrdersError,
+  selectOrdersLoading,
+  selectSelectedOrder,
   selectUserOrders
 } from '../../services/slices/ordersSlice';
 import { getOrderByNumber } from '../../services/thunk/orders';
@@ -13,7 +16,7 @@ import { getOrderByNumber } from '../../services/thunk/orders';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient, TOrder } from '@utils-types';
-import { isFulfilled } from '@reduxjs/toolkit';
+import { ErrorsInfo } from '@ui';
 
 export const OrderInfo: FC = () => {
   const dispatch = useAppDispatch();
@@ -21,41 +24,31 @@ export const OrderInfo: FC = () => {
   const location = useLocation();
 
   const isProfileOrder = location.pathname.startsWith('/profile/orders');
+
   const userOrders = useSelector(selectUserOrders);
   const feedOrders = useSelector(selectFeedOrders);
   const ingredients: TIngredient[] = useSelector(selectIngredients);
 
-  // Состояние для хранения данных заказа из API
-  const [apiOrderData, setApiOrderData] = useState<TOrder | null>(null);
-  // Состояние загрузки
-  const [loading, setLoading] = useState(false);
   // Выбираем нужный массив заказов (локальный)
   const orders = isProfileOrder ? userOrders : feedOrders;
   // Ищем заказ в локальных данных
   const localOrderData = orders.find(
     (order) => order.number === Number(number)
   );
+
   // Эффект для загрузки данных через API при отсутствии локального заказа
   useEffect(() => {
     if (!localOrderData && number) {
-      setLoading(true);
-      dispatch(getOrderByNumber(Number(number)))
-        .then((data) => {
-          if (isFulfilled(data)) {
-            setApiOrderData(data.payload.orders[0]);
-          } else {
-            setApiOrderData(null);
-          }
-        })
-        .catch(() => {
-          setApiOrderData(null);
-        })
-        .finally(() => setLoading(false));
+      dispatch(getOrderByNumber(Number(number)));
     }
   }, [localOrderData, number]);
 
+  const apiOrderData = useSelector(selectSelectedOrder);
+
   // Используем локальные данные, если они есть, иначе — из API
-  const orderData = localOrderData || apiOrderData;
+  // (Предполагается, что getOrderByNumber обновляет состояние в Redux)
+  const orderData = localOrderData || apiOrderData || null;
+
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
@@ -96,9 +89,17 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (loading || !orderInfo) {
+  const loading = useSelector(selectOrdersLoading).orderByNumber;
+  const error =
+    useSelector(selectOrdersError).orderByNumber || 'Заказ не найден';
+
+  if (orderInfo) {
+    return <OrderInfoUI orderInfo={orderInfo} />;
+  }
+
+  if (loading) {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  return <ErrorsInfo errorText={error} />;
 };

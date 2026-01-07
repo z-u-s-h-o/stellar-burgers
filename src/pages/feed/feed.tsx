@@ -4,7 +4,10 @@ import { useSelector } from 'react-redux';
 import { TOrder } from '@utils-types';
 
 import { useDispatch } from '../../services/store';
-import { selectFeedOrders } from '../../services/slices/ordersSlice';
+import {
+  selectFeedOrders,
+  selectOrdersLoading
+} from '../../services/slices/ordersSlice';
 import { getFeedOrders } from '../../services/thunk/orders';
 
 import { FeedUI } from '@ui-pages';
@@ -12,15 +15,9 @@ import { Preloader } from '@ui';
 
 export const Feed: FC = () => {
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    dispatch(getFeedOrders())
-      .unwrap()
-      .finally(() => {
-        setLoading(false);
-      });
+    dispatch(getFeedOrders());
   }, []);
 
   const handleGetFeeds = () => {
@@ -28,6 +25,7 @@ export const Feed: FC = () => {
   };
 
   const orders: TOrder[] = useSelector(selectFeedOrders);
+  const loading = useSelector(selectOrdersLoading).feedOrders;
 
   return (
     <>

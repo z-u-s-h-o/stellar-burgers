@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 import {
   selectUserData,
-  selectUserIsAuthChecked
+  selectUserLoading
 } from '../../services/slices/userSlice';
 
 type ProtectedRouteProps = {
@@ -14,9 +14,9 @@ type ProtectedRouteProps = {
 function ProtectedRoute({ children, onlyUnAuth }: ProtectedRouteProps) {
   const location = useLocation();
   const userData = useSelector(selectUserData);
-  const isAuthChecked = useSelector(selectUserIsAuthChecked);
+  const loading = useSelector(selectUserLoading).get;
 
-  if (!isAuthChecked) {
+  if (loading) {
     return <Preloader />;
   }
 
