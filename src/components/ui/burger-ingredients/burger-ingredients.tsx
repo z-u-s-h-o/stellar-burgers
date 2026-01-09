@@ -20,9 +20,12 @@ export const BurgerIngredientsUI: FC<BurgerIngredientsUIProps> = memo(
     onTabClick
   }) => (
     <>
-      <section className={styles.burger_ingredients}>
+      <section
+        className={styles.burger_ingredients}
+        data-cy='burger_ingredients_section'
+      >
         <nav>
-          <ul className={styles.menu}>
+          <ul className={styles.menu} data-cy='burger_ingredients_menu'>
             <Tab value='bun' active={currentTab === 'bun'} onClick={onTabClick}>
               Булки
             </Tab>

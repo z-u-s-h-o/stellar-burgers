@@ -30,7 +30,7 @@ export const ingredientsSlice = createSlice({
       })
       .addCase(getIngredients.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error?.message || 'Неизвестная ошибка';
+        state.error = action.error.message || 'Ошибка загрузки ингридиентов';
       });
   },
   selectors: {

@@ -7,8 +7,9 @@ type ConstructorState = {
     bun: TConstructorIngredient | null;
     ingredients: TConstructorIngredient[];
   };
-  orderRequest: boolean;
   orderModalData: TOrder | null;
+  orderRequest: boolean;
+  error: string | null;
 };
 
 const initialState: ConstructorState = {
@@ -16,8 +17,9 @@ const initialState: ConstructorState = {
     bun: null,
     ingredients: []
   },
+  orderModalData: null,
   orderRequest: false,
-  orderModalData: null
+  error: null
 };
 
 export const burgerConstructorSlice = createSlice({
@@ -91,6 +93,7 @@ export const burgerConstructorSlice = createSlice({
     builder
       .addCase(sendOrder.pending, (state) => {
         state.orderRequest = true;
+        state.error = null;
       })
       .addCase(sendOrder.fulfilled, (state, action) => {
         state.constructorItems = {
@@ -100,8 +103,9 @@ export const burgerConstructorSlice = createSlice({
         state.orderRequest = false;
         state.orderModalData = action.payload.order;
       })
-      .addCase(sendOrder.rejected, (state) => {
+      .addCase(sendOrder.rejected, (state, action) => {
         state.orderRequest = false;
+        state.error = action.error.message || 'Ошибка отправки заказа';
       });
   },
   selectors: {
