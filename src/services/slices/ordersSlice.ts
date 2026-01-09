@@ -31,9 +31,9 @@ const initialState: OrdersState = {
   total: 0,
   totalToday: 0,
   loading: {
-    feedOrders: true,
-    userOrders: true,
-    orderByNumber: true
+    feedOrders: false,
+    userOrders: false,
+    orderByNumber: false
   },
   error: {
     feedOrders: null,

@@ -30,11 +30,11 @@ export type TUserState = {
 const initialState: TUserState = {
   user: null,
   loading: {
-    get: true,
-    login: true,
-    update: true,
-    logout: true,
-    register: true
+    get: false,
+    login: false,
+    update: false,
+    logout: false,
+    register: false
   },
   error: {
     get: null,
